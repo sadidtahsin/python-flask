@@ -1,0 +1,235 @@
+{% extends "layout.html" %}
+{% block body %}
+<style>
+@keyframes anim {
+  0% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+tr {
+  background: #eee;
+  border-bottom: 1px solid #ddd;
+  display: none;
+  transform-origin: top;
+}
+tr.active {
+  display: table-row;
+  animation: anim 0.5s ease;
+}
+
+    </style>
+<div class="col-lg-12">
+        <div class="card">
+          <div class="card-header">
+            <strong>Add Sell</strong>
+          </div>
+          <div class="card-body card-block">
+            <form action="" method="post" class="form-horizontal">
+              <div class="row form-group">
+                <div class="col col-md-12">
+                  <div class="input-group">
+                    
+                    <input type="text" id="trolley_id" name="trolley_id" placeholder="Username" class="form-control">
+                    <div class="input-group-btn">
+                        <input type="button" class="btn btn-primary" id="btn_add" value="ADD">
+                             
+                        
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              
+            </form>
+          </div>
+
+          <div class="row">
+              <div class="container">
+                <div class="col-lg-8">
+                    <table class="table table-bordered  order-list">
+                            <thead>
+                            <tr class="active row">
+                                <th style="width: 55%">Product Name</th>
+                                <th style="width: 15%">Price</th>
+                                <th style="width: 10%">Quantity</th>
+                                <th style="width: 15%">Total</th>
+                                <th style="width: 15%">X</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            
+                            
+                            </tbody>
+                        </table>
+                </div>
+              
+             
+                <div class="col-lg-4">
+                   
+                        <h2 style="text-align: center; height:30%; padding-top:2%;padding-bottom:2%; margin-bottom:1%;" class="badge-primary">TOTAL</h2>
+                        <h2 id="total_amount" style="text-align: center; height:30%; padding-top:2%;padding-bottom:2%; margin-bottom:2%;" class="badge-info" >0</h2>
+
+                        
+                          <div class="card">
+                              <div class="card-header">
+                                  <strong class="card-title">Payment</strong>
+                              </div>
+                              <div class="card-body">
+                                <!-- Credit Card -->
+                                <div id="pay-invoice">
+                                    <div class="card-body">
+                                        <form action="{{url_for('sell', type='pay')}}" method="post" novalidate="novalidate">
+                                            
+                                            <input type="hidden" name="pay_trolley_id" value="0" id="pay_trolley_id">
+                                            <input type="hidden" name="amount" value="0" id="amount">
+
+
+                                            <div class="form-group">
+                                                <label for="cc-payment" class="control-label mb-1">Payment amount</label>
+                                                <input id="paid" name="paid" type="text" class="form-control" aria-required="true" aria-invalid="false" value="">
+                                            </div>
+                                            <div class="form-group has-success">
+                                                <label for="cc-name" class="control-label mb-1">Return amount</label>
+                                                <input id="return" name="return" type="text" class="form-control cc-name valid" data-val="true" data-val-required="Please enter the name on card" autocomplete="cc-name" aria-required="true" aria-invalid="false" aria-describedby="cc-name-error">
+                                                <span class="help-block field-validation-valid" data-valmsg-for="cc-name" data-valmsg-replace="true"></span>
+                                            </div>
+                                            <div>
+                                                <button id="payment-button" type="submit" class="btn btn-lg btn-info btn-block">
+                                                    <i class="fa fa-lock fa-lg"></i>&nbsp;
+                                                    <span id="payment-button-amount">Pay</span>
+                                                    
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+              
+                              </div>
+                          </div> <!-- .card -->
+              
+                    
+
+
+                   
+
+                </div>
+            </div>
+            </div>
+         
+
+
+          
+        </div>
+      </div>
+<script type="text/javascript">
+
+        
+jQuery(document).ready(function () {
+
+    
+        $("form").bind("keypress", function(e) {
+            if (e.keyCode == 13) {
+                return false;
+            }
+        });
+    var counter = 0;
+
+    function get_items(id){
+        $.get("{{ root_url }}trolley_items/get/"+id, function(data, status){
+            var s = JSON.parse(data);
+            console.log(s);
+            row_add(s.items)
+            // console.log(s.items);
+        });
+    }
+    $("#btn_add").on("click", function (){
+        id=$("#trolley_id").val();
+        get_items(id);
+        $("#pay_trolley_id").val(id);
+    });
+
+    $('#paid').on("keypress", function(e) {
+        if (e.keyCode == 13) {
+            paid = $("#paid").val();
+            amount= $("#amount").val();
+            $("#return").val(paid-amount);
+            return false; // prevent the button click from happening
+        }
+    });
+
+    function row_add(items){
+        
+        for(i=0;i<items.length;i++){
+            var newRow = $("<tr class= 'active'>");
+            var cols = "";
+            cols += '<td>'+items[i].pname+'</td>';
+            cols += '<td>'+items[i].price+'</td>';
+            cols += '<td>'+items[i].quantity+'</td>';
+            cols += '<td>'+items[i].price * items[i].quantity +'</td>';
+            cols += '<td><input type="button" class="ibtnDel btn btn-sm btn-danger "  value="X"></td>';
+            newRow.append(cols);
+            $("table.order-list").append(newRow);
+        }
+        costCalculator();
+
+    }
+
+    $(".addrow").on("click", function () {
+        counter++;
+        var newRow = $("<tr class= 'active'>");
+        var cols = "";
+        cols += '<td>3</td>';
+        cols += '<td>2</td>';
+        cols += '<td>12</td>';
+        cols += '<td>'+counter+'</td>';
+        cols += '<td><input type="button" class="ibtnDel btn btn-sm btn-danger "  value="X"></td>';
+        newRow.append(cols);
+        $("table.order-list").append(newRow);
+        costCalculator();
+    });
+
+
+
+    $("table.order-list").on("click", ".ibtnDel", function (event) {
+        $(this).closest("tr").remove();       
+        counter -= 1
+        costCalculator();
+    });
+
+
+});
+
+
+
+function calculateRow(row) {
+    var price = +row.find('input[name^="price"]').val();
+
+}
+
+function calculateGrandTotal() {
+    var grandTotal = 0;
+    $("table.order-list").find('input[name^="price"]').each(function () {
+        grandTotal += +$(this).val();
+    });
+    $("#grandtotal").text(grandTotal.toFixed(2));
+}
+
+function costCalculator(){
+    var sum = 0;
+    $('.order-list tr:gt(0)').each(function(){
+     var x= $('td:eq(3)', $(this)).html();
+     sum += parseInt(x);   
+    });
+
+    $("#total_amount").html(sum);
+    $("#amount").val(sum);
+    // alert(sum);
+}
+        
+</script>
+        
+
+      {% endblock %}
